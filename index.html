@@ -197,27 +197,34 @@ function renderPreview() {
 // ==========================
 // DOWNLOAD
 // ==========================
-document.getElementById('btnGen').addEventListener('click', async () => {
+document.getElementById('btnGen').addEventListener('click', async function (evt) {
+  evt.preventDefault();
+
   await document.fonts.ready;
 
-  const outCanvas = document.createElement('canvas');
-  outCanvas.width = CANVAS_W;
-  outCanvas.height = CANVAS_H;
-  const out = outCanvas.getContext('2d');
+  // usa o próprio canvasPreview já desenhado (sem re-render)
+  const sourceCanvas = document.getElementById('canvasPreview');
 
-  drawInternal(out);
+  sourceCanvas.toBlob(function(blob){
+    if (!blob) {
+      alert("Erro ao gerar imagem.");
+      return;
+    }
 
-  outCanvas.toBlob(blob => {
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = "assinatura_final.png";
     a.click();
-    URL.revokeObjectURL(url);
-  }, "image/png", 1.0);
+
+    setTimeout(() => URL.revokeObjectURL(url), 200);
+
+  }, "image/png");
 });
+
 </script>
 
 </body>
 </html>
+
 
