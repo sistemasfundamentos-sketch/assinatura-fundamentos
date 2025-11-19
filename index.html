@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gerador de Assinatura - Baixar PNG</title>
+
+<!-- Fonte Arimo -->
+<link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  body { font-family: "Arimo", Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px; color:#0a325c; }
+  .wrap { max-width:1200px; margin:0 auto; }
+  h1 { font-size:20px; margin-bottom:6px; }
+  p.lead { margin-top:0; color:#333; margin-bottom:16px; }
+  .form { display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; }
+  .col { flex:1 1 320px; min-width:280px; background:#fff; padding:14px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+  label { display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#223; }
+  input[type=text] { width:100%; padding:8px 10px; font-size:14px; border:1px solid #d0d7df; border-radius:6px; box-sizing:border-box; }
+  button { background:#0a325c; color:white; border:0; padding:10px 14px; border-radius:6px; cursor:pointer; font-weight:600; }
+  .preview { margin-top:18px; background:#fff; padding:10px; border-radius:8px; text-align:center; }
+  canvas { max-width:100%; height:auto; border:1px solid #e1e1e1; }
+  .small { font-size:12px; color:#666; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Gerador de Assinatura</h1>
+  
+
+  <div class="form">
+    <div class="col">
+      <label>Nome</label>
+      <input id="nome" type="text" value="">
+
+      <label style="margin-top:10px;">Cargo</label>
+      <input id="cargo" type="text" value="">
+
+      <label style="margin-top:10px;">Telefone</label>
+      <input id="tel" type="text" value="">
+
+      <label style="margin-top:10px;">E-mail</label>
+      <input id="email" type="text" value="">
+
+      <div style="margin-top:12px;">
+        <button id="btnGen">Gerar & Baixar</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="preview">
+        <strong>Pré-visualização</strong>
+        <div style="margin-top:10px;">
+          <canvas id="canvasPreview" width="1365" height="768"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==========================
+// CARREGAR FONTE ARIMO NO CANVAS
+// ==========================
+async function loadFonts() {
+  const arimo = new FontFace(
+    "Arimo",
+    "url(https://fonts.gstatic.com/s/arimo/v28/P5sMzZCDf9_T_3cV7q6F.woff2)"
+  );
+
+  await arimo.load();
+  document.fonts.add(arimo);
+  console.log("Fonte Arimo carregada no canvas.");
+}
+
+// Chamamos antes de tudo
+loadFonts();
+
+
+// RESOLUÇÃO DO TEMPLATE
+const CANVAS_W = 1365;
+const CANVAS_H = 768;
+
+const POS = {
+  name:  { x: 700, y: 190 },
+  role:  { x: 700, y: 255 },
+  phone: { x: 750, y: 330 },
+  email: { x: 750, y: 390 }
+};
+
+const canvas = document.getElementById('canvasPreview');
+canvas.width = CANVAS_W;
+canvas.height = CANVAS_H;
+const ctx = canvas.getContext('2d');
+
+const bg = new Image();
+bg.src = 'template-canva.png';
+
+ctx.textBaseline = 'top';
+
+// ==========================
+// FUNÇÃO PRINCIPAL DE PREVIEW
+// ==========================
+async function renderPreview() {
+  await document.fonts.ready; // garante Arimo carregada
+
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+  if (bg.complete && bg.naturalWidth !== 0) {
+    ctx.drawImage(bg, 0, 0, CANVAS_W, CANVAS_H);
+  }
+
+  const nome = document.getElementById('nome').value;
+  const cargo = document.getElementById('cargo').value;
+  const tel   = document.getElementById('tel').value;
+  const email = document.getElementById('email').value;
+
+  // NOME
+  ctx.fillStyle = "#282935";
+  ctx.font = "400 54.2px Arimo";
+  ctx.fillText(nome, POS.name.x, POS.name.y);
+
+  // CARGO
+  ctx.fillStyle = "#282935";
+  ctx.font = "400 28.5px Arimo";
+  ctx.fillText(cargo, POS.role.x, POS.role.y);
+
+  // TELEFONE
+  ctx.fillStyle = "#242424";
+  ctx.font = "400 28.5px Arimo";
+  ctx.fillText(tel, POS.phone.x, POS.phone.y);
+
+  // EMAIL
+  ctx.fillStyle = "#242424";
+  ctx.font = "400 28.5px Arimo";
+  ctx.fillText(email, POS.email.x, POS.email.y);
+}
+
+bg.onload = renderPreview;
+['nome','cargo','tel','email'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderPreview);
+});
+
+
+// ==========================
+// BOTÃO DE GERAR PNG FINAL
+// ==========================
+// Garanta que o botão no HTML tenha type="button":
+// <button id="btnGen" type="button">Gerar & Baixar</button>
+
+// garanta no HTML: <button id="btnGen" type="button">Gerar & Baixar</button>
+
+document.getElementById('btnGen').addEventListener('click', async function (evt) {
+  if (evt && evt.preventDefault) evt.preventDefault();
+
+  // garante que a fonte esteja pronta
+  await document.fonts.ready;
+
+  // cria canvas de saída e desenha bg+texto (mesma lógica)
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = CANVAS_W;
+  outCanvas.height = CANVAS_H;
+  const out = outCanvas.getContext('2d');
+
+  try {
+    out.drawImage(bg, 0, 0, CANVAS_W, CANVAS_H);
+  } catch (err) {
+    // se drawImage falhar por alguma razão, mostrar erro
+    console.error('Erro ao desenhar a imagem de background:', err);
+    alert('Erro ao desenhar o template. Verifique o arquivo template-canva.png (CORS ou caminho).');
+    return;
+  }
+
+  const nome  = document.getElementById('nome').value;
+  const cargo = document.getElementById('cargo').value;
+  const tel   = document.getElementById('tel').value;
+  const email = document.getElementById('email').value;
+
+  // escreve textos (mesma formatação que já usa)
+  out.fillStyle = "#282935";
+  out.font = "700 14.2px Arimo";
+  out.fillText(nome, POS.name.x, POS.name.y);
+
+  out.fillStyle = "#282935";
+  out.font = "400 8.5px Arimo";
+  out.fillText(cargo, POS.role.x, POS.role.y);
+
+  out.fillStyle = "#242424";
+  out.font = "400 8.5px Arimo";
+  out.fillText(tel, POS.phone.x, POS.phone.y);
+
+  out.fillStyle = "#242424";
+  out.font = "400 8.5px Arimo";
+  out.fillText(email, POS.email.x, POS.email.y);
+
+  // wrapper Promise para toBlob
+  function canvasToBlob(canvas, type = 'image/png', quality = 1.0) {
+    return new Promise((resolve, reject) => {
+      if (!canvas.toBlob) {
+        // fallback: reject to use dataURL fallback
+        reject(new Error('toBlob não suportado'));
+        return;
+      }
+      canvas.toBlob(function(blob) {
+        if (!blob) {
+          reject(new Error('toBlob retornou null'));
+        } else {
+          resolve(blob);
+        }
+      }, type, quality);
+    });
+  }
+
+  // tenta gerar blob (melhor prática)
+  try {
+    const blob = await canvasToBlob(outCanvas, 'image/png', 1.0);
+
+    // cria ObjectURL e força download anexando <a> ao DOM
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'assinatura_final.png';
+    document.body.appendChild(a);
+
+    // dispara clique
+    a.click();
+
+    // limpeza
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 150);
+
+  } catch (err) {
+    console.warn('toBlob falhou ou não suportado, fazendo fallback para dataURL. Erro:', err);
+
+    try {
+      // fallback: abrir dataURL em nova aba (permite salvar manualmente)
+      const dataURL = outCanvas.toDataURL('image/png');
+      // abre em nova aba (usuário pode salvar com botão direito → salvar imagem)
+      const w = window.open();
+      if (w) {
+        w.document.write('<title>Assinatura - clique com botão direito e "Salvar imagem como..."</title>');
+        w.document.write('<img src="' + dataURL + '" style="max-width:100%;">');
+        w.document.close();
+      } else {
+        // se popup bloqueado, instrui usuário
+        alert('Não foi possível iniciar download automaticamente. A janela pop-up foi bloqueada. Salve manualmente a imagem gerada.');
+      }
+    } catch (err2) {
+      console.error('Fallback falhou:', err2);
+      alert('Erro ao gerar a imagem. Verifique o console do navegador para mais detalhes.');
+    }
+  }
+});
+
+</script>
+
+</body>
+</html>
