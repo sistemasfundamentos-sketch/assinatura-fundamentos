@@ -42,7 +42,6 @@
 
       <div style="margin-top:12px;">
         <button id="btnGen" type="button">Baixar</button>
-        <div class="small">Se estiver hospedando no GitHub, altere <code>bg.src</code> para o raw URL do repositório.</div>
       </div>
     </div>
 
@@ -92,9 +91,9 @@ ctx.textBaseline = 'top';
 // LOAD BG IMAGE
 const bg = new Image();
 // 1) if running locally (same dir), use relative path:
-bg.src = 'template-canva.png';
+//bg.src = 'template-canva.png';
 // 2) if you're hosting in GitHub Pages, replace above with the RAW URL like:
-// bg.src = 'https://raw.githubusercontent.com/sistemasfundamentos-sketch/assinatura-fundamentos/main/template-canva.png';
+bg.src = 'https://raw.githubusercontent.com/sistemasfundamentos-sketch/assinatura-fundamentos/main/template-canva.png';
 
 let bgLoaded = false;
 bg.onload = () => { bgLoaded = true; renderPreview(); };
@@ -214,5 +213,6 @@ document.getElementById('btnGen').addEventListener('click', async function (evt)
 </script>
 </body>
 </html>
+
 
 
